@@ -15,8 +15,8 @@ RUN apk add --no-cache \
 # Install AWS CLI v2 (replacing `pip` with `curl` and `unzip`)
 RUN curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"\
     && unzip awscli-bundle.zip \
-    && ./aws/install \
-    && rm -rf awscli-bundle.zip ./aws
+    && sudo ./awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws
+    && rm -rf awscli-bundle.zip ./awscli-bundle
 
 # Verify the installation
 RUN aws --version
