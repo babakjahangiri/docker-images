@@ -1,2 +1,2 @@
-# docker-images
-repo for custome docker images
+# docker images
+this repository has made for my custom docker images
