@@ -7,9 +7,10 @@ this repository has made for my custom docker images
 - Navigate to the directory containing your Dockerfile and build the image
 
 '''
-docker build -t my-container-image .
+docker build -t alpine-awscli .
 '''
 
+## run docker image as a new container
 '''
-docker run -v /path/to/your/repo:/data -it my-container-app
+docker run -v /path/to/your/repo:/data -it alpine-awscli
 '''
