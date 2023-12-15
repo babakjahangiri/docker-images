@@ -1,28 +1,27 @@
-# Use Alpine Linux as the base image
-FROM alpine:latest
+ARG ALPINE_VERSION=3.19
+FROM python:3.11-alpine${ALPINE_VERSION} as builder
 
-MAINTAINER babakjahan
+ARG AWS_CLI_VERSION=2.15.0
+RUN apk add --no-cache git unzip groff build-base libffi-dev cmake
+RUN git clone --single-branch --depth 1 -b ${AWS_CLI_VERSION} https://github.com/aws/aws-cli.git
 
-# Update and install dependencies
-RUN apk add --no-cache \
-    groff \
-    less \
-    zip \
-    curl
+WORKDIR aws-cli
+RUN ./configure --with-install-type=portable-exe --with-download-deps
+RUN make
+RUN make install
 
+# reduce image size: remove autocomplete and examples
+RUN rm -rf \
+    /usr/local/lib/aws-cli/aws_completer \
+    /usr/local/lib/aws-cli/awscli/data/ac.index \
+    /usr/local/lib/aws-cli/awscli/examples
+RUN find /usr/local/lib/aws-cli/awscli/data -name completions-1*.json -delete
+RUN find /usr/local/lib/aws-cli/awscli/botocore/data -name examples-1.json -delete
+RUN (cd /usr/local/lib/aws-cli; for a in *.so*; do test -f /lib/$a && rm $a; done)
 
-# curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-# Install AWS CLI v2 (replacing `pip` with `curl` and `unzip`)
-RUN curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"\
-    && unzip awscli-bundle.zip \
-    && sudo ./awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws
-    && rm -rf awscli-bundle.zip ./awscli-bundle
+# build the final image
+FROM alpine:${ALPINE_VERSION}
+COPY --from=builder /usr/local/lib/aws-cli/ /usr/local/lib/aws-cli/
+RUN ln -s /usr/local/lib/aws-cli/aws /usr/local/bin/aws
 
-# Verify the installation
 RUN aws --version
-
-# Set up a working directory
-WORKDIR /data
-
-# Set the default command for the container
-CMD ["/bin/sh"]
