@@ -5,7 +5,7 @@ ARG AWS_CLI_VERSION=2.15.0
 RUN apk add --no-cache git unzip groff build-base libffi-dev cmake
 RUN git clone --single-branch --depth 1 -b ${AWS_CLI_VERSION} https://github.com/aws/aws-cli.git
 
-WORKDIR aws-cli
+WORKDIR /aws-cli
 RUN ./configure --with-install-type=portable-exe --with-download-deps
 RUN make
 RUN make install
